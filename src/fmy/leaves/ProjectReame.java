@@ -1,34 +1,34 @@
 package fmy.leaves;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * ÊäÈë²ÎÊı£º
  * 
- * -path ÏîÄ¿¸ùÄ¿Â¼
+ * è¾“å…¥å‚æ•°ï¼š
  * 
- * -old Ô­ÏîÄ¿Ãû
+ * -path é¡¹ç›®æ ¹ç›®å½•
  * 
- * -new ÏÖÏîÄ¿Ãû
+ * -old åŸé¡¹ç›®å
  * 
- * ¶ÔJavaÏîÄ¿¸üÃû¡£
+ * -new ç°é¡¹ç›®å
  * 
- * ÀıÈç£º
+ * å¯¹Javaé¡¹ç›®æ›´åã€‚
  * 
- * -path=D:\Workspaces\aaa\ -old=aaa -new=bbb
+ * ä¾‹å¦‚ï¼š
  * 
- * @author fmy-leaves
- *
+ * * -path=D:\Workspaces\aaa\ -old=aaa -new=bbb * * @author fmy-leaves *
  */
 public class ProjectReame {
-
 	public static void main(String[] args) {
-		String msg = "ÊäÈë²ÎÊı£º\n" + "\t-path\tÏîÄ¿¸ùÄ¿Â¼\n" + "\t-old\tÔ­ÏîÄ¿Ãû\n" + "\t-new\tÏÖÏîÄ¿Ãû\n" + "¶ÔJavaÏîÄ¿¸üÃû¡£\n"
-				+ "ÀıÈç£º\n\t -path=D:\\Workspaces\\aaa\\ -old=aaa -new=bbb";
+		String msg = "è¾“å…¥å‚æ•°ï¼š\n" + "\t-path\té¡¹ç›®æ ¹ç›®å½•\n" + "\t-old\tåŸé¡¹ç›®å\n" + "\t-new\tç°é¡¹ç›®å\n" + "å¯¹Javaé¡¹ç›®æ›´åã€‚\n"
+				+ "ä¾‹å¦‚ï¼š\n\t -path=D:\\Workspaces\\aaa\\ -old=aaa -new=bbb";
 		String path = null;
 		String old = null;
 		String newf = null;
@@ -58,10 +58,17 @@ public class ProjectReame {
 
 	private static void folderRename(String path, String old, String newf) {
 		File root = new File(path);
-		System.out.println("¸üÃû¸ùÄ¿Â¼£º" + root.getAbsolutePath());
+		System.out.println("æ›´åæ ¹ç›®å½•ï¼š" + root.getAbsolutePath());
 		folderRename(root, old, newf);
 	}
 
+	/**
+	 * é€’å½’æ–‡ä»¶ç›®å½•æ›´å
+	 * 
+	 * @param root
+	 * @param old
+	 * @param newf
+	 */
 	private static void folderRename(File root, String old, String newf) {
 		if (root.isDirectory()) {
 			File[] cfs = root.listFiles();
@@ -69,49 +76,76 @@ public class ProjectReame {
 				folderRename(cfs[i], old, newf);
 			}
 			if (root.getName().contains(old)) {
-				System.out.println("¸üÃûÇ°£º" + root.getAbsolutePath());
+				System.out.println("æ›´åå‰ï¼š" + root.getAbsolutePath());
 				String deststr = root.getAbsolutePath();
 				deststr = deststr.substring(0, deststr.lastIndexOf(root.getName()));
 				deststr += root.getName().replace(old, newf);
 				root.renameTo(new File(deststr));
-				System.out.println("¸üÃûºó£º" + deststr);
+				System.out.println("æ›´ååï¼š" + deststr);
 			}
 		} else {
 			fileContentChange(root, old, newf);
 		}
 	}
 
+	/**
+	 * java xml å†…å®¹æ›´æ”¹å†…å®¹
+	 * 
+	 * @param root
+	 * @param old
+	 * @param newf
+	 */
 	private static void fileContentChange(File root, String old, String newf) {
 		String name = root.getName();
 		Pattern pattern = Pattern.compile(".*((\\.properties)|(\\.xml)|(\\.java))$");
 		Matcher m = pattern.matcher(name);
 		if (m.matches()) {
-			System.out.println("Ğè¸üĞÂµÄÎÄ¼ş£º" + root.getAbsolutePath());
-			RandomAccessFile fwr = null;
+			System.out.println("éœ€æ›´æ–°çš„æ–‡ä»¶ï¼š" + root.getAbsolutePath());
+			FileWriter fw = null;
+			BufferedReader br = null;
+			BufferedReader sbr = null;
 			try {
-				fwr = new RandomAccessFile(root, "rw");
-				String rl = fwr.readLine();
-				long ponit = fwr.getFilePointer();
-				while (rl != null) {
-					if (rl.contains(old)) {
-						fwr.seek(ponit);
-						String nrl = rl.replace(old, newf);
-						fwr.writeBytes(nrl);
-						fwr.writeBytes("                                                             ");
-					}
-					rl = fwr.readLine();
-					ponit = fwr.getFilePointer();
+				// å–æ–‡ä»¶ä¸­çš„æ–‡æœ¬æ•°æ®
+				StringBuffer sb = new StringBuffer();
+				br = new BufferedReader(new FileReader(root));
+				String brl = br.readLine();
+				while (brl != null) {
+					sb.append(brl + "\n");
+					brl = br.readLine();
 				}
+				// æ›¿æ¢åå†™å›æºæ–‡ä»¶
+				fw = new FileWriter(root);
+				sbr = new BufferedReader(new StringReader(sb.toString()));
+				String sbrl = sbr.readLine();
+				while (sbrl != null) {
+					if (sbrl.contains(old)) {
+						String nrl = sbrl.replace(old, newf);
+						fw.write(nrl + "\n");
+					} else {
+						fw.write(sbrl + "\n");
+					}
+					sbrl = sbr.readLine();
+				}
+				fw.flush();
 			} catch (Exception e) {
 				e.printStackTrace();
 			} finally {
 				try {
-					fwr.close();
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				try {
+					sbr.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				try {
+					fw.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 		}
-
 	}
 }
